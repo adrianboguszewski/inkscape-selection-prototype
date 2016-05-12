@@ -7,7 +7,7 @@
 #include <boost/intrusive/list.hpp>
 
 // this causes some warning, but it's only for this prototype
-struct Object;
+class Object;
 struct delete_disposer
 {
     void operator()(Object *delete_this) {
@@ -15,40 +15,53 @@ struct delete_disposer
     }
 };
 
-typedef boost::intrusive::list_member_hook<boost::intrusive::link_mode<boost::intrusive::auto_unlink>> list_hook;
-
-struct Object {
+class Object {
+private:
     std::string name;
-    list_hook child_hook;
-    boost::intrusive::list<Object, boost::intrusive::constant_time_size<false>,
-    boost::intrusive::member_hook<
-            Object,
-            list_hook,
-            &Object::child_hook
-    >> children;
     Object* parent;
+
+    typedef boost::intrusive::list_member_hook<
+            boost::intrusive::link_mode<
+                    boost::intrusive::auto_unlink
+            >> list_hook;
+    list_hook child_hook;
+
+    typedef boost::intrusive::list<
+            Object,
+            boost::intrusive::constant_time_size<false>,
+            boost::intrusive::member_hook<
+                    Object,
+                    list_hook,
+                    &Object::child_hook
+            >> list;
+    list children;
+
     sigc::signal<void, Object*> release_signal;
     sigc::connection release_connection;
-    Object(const std::string &name) : name(name), parent(NULL){ }
-    virtual ~Object() {
-        // only for this prototype
-        children.clear_and_dispose(delete_disposer());
-        release_signal.emit(this);
+
+public:
+    Object(std::string name);
+    virtual ~Object();
+
+    list &getChildren() {
+        return children;
     }
-    void connectRelease(sigc::slot<void, Object*> slot) {
-        release_connection = release_signal.connect(slot);
-    }
-    void disconnectRelease() {
-        release_connection.disconnect();
-    }
+
+    const std::string &getName() const;
+    Object * getParent() ;
+
+    void connectRelease(sigc::slot<void, Object*> slot);
+    void disconnectRelease();
+    void addChild(Object* o);
+    bool isDescendantOf(Object* o);
+
     bool operator==(Object o) {
         return name == o.name;
     }
+
     bool operator!=(Object o) {
         return name != o.name;
     }
-    void addChild(Object* o);
-    bool isDescendantOf(Object* o);
 };
 
 #endif //INKSCAPE_PROTOTYPE_OBJECT_H

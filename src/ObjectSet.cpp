@@ -12,7 +12,7 @@ bool ObjectSet::add(Object* object) {
 }
 
 bool ObjectSet::contains(Object* object) {
-    return container.get<hashed>().find(object->name) != container.get<hashed>().end();
+    return container.get<hashed>().find(object->getName()) != container.get<hashed>().end();
 }
 
 void ObjectSet::clear() {
@@ -25,11 +25,11 @@ int ObjectSet::size() {
 
 void ObjectSet::remove(Object* object) {
     object->disconnectRelease();
-    container.get<hashed>().erase(object->name);
+    container.get<hashed>().erase(object->getName());
     if (anyParentIsInSet(object)) {
-        if (object->parent != NULL) {
-            remove(object->parent);
-            for (auto it = object->parent->children.begin(); it != object->parent->children.end(); ++it) {
+        if (object->getParent() != NULL) {
+            remove(object->getParent());
+            for (auto it = object->getParent()->getChildren().begin(); it != object->getParent()->getChildren().end(); ++it) {
                 if (&*it != object) {
                     add(&*it);
                 }
@@ -40,7 +40,7 @@ void ObjectSet::remove(Object* object) {
 
 void ObjectSet::print() {
     for (multi_index_container::iterator it = container.begin(); it != container.end(); ++it) {
-        std::cout << (*it)->name << " ";
+        std::cout << (*it)->getName() << " ";
     }
     std::cout << std::endl;
 }
@@ -51,13 +51,13 @@ bool ObjectSet::anyParentIsInSet(Object *object) {
         if (contains(o)) {
             return true;
         }
-        o = o->parent;
+        o = o->getParent();
     }
     return false;
 }
 
 void ObjectSet::removeChildrenFromSet(Object *object) {
-    for (auto it = object->children.begin(); it != object->children.end(); ++it) {
+    for (auto it = object->getChildren().begin(); it != object->getChildren().end(); ++it) {
         Object* o = &*it;
         if (contains(o)) {
             remove(o);
@@ -66,21 +66,4 @@ void ObjectSet::removeChildrenFromSet(Object *object) {
 
         removeChildrenFromSet(o);
     }
-}
-
-
-bool Object::isDescendantOf(Object *o) {
-    Object* p = parent;
-    while(p != NULL) {
-        if (p == o) {
-            return true;
-        }
-        p = p->parent;
-    }
-    return false;
-}
-
-void Object::addChild(Object* o) {
-    o->parent = this;
-    children.push_back(*o);
 }
