@@ -36,8 +36,7 @@ private:
             >> list;
     list children;
 
-    sigc::signal<void, Object*> release_signal;
-    sigc::connection release_connection;
+    sigc::signal<bool, Object*> release_signal;
 
 public:
     Object(std::string name);
@@ -50,8 +49,7 @@ public:
     const std::string &getName() const;
     Object * getParent() ;
 
-    void connectRelease(sigc::slot<void, Object*> slot);
-    void disconnectRelease();
+    sigc::connection connectRelease(sigc::slot<bool, Object*> slot);
     void addChild(Object* o);
     bool isDescendantOf(Object* o);
 

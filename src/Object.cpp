@@ -32,10 +32,7 @@ void Object::addChild(Object* o) {
     children.push_back(*o);
 }
 
-void Object::connectRelease(sigc::slot<void, Object*> slot) {
-    release_connection = release_signal.connect(slot);
+sigc::connection Object::connectRelease(sigc::slot<bool, Object*> slot) {
+    return release_signal.connect(slot);
 }
 
-void Object::disconnectRelease() {
-    release_connection.disconnect();
-}

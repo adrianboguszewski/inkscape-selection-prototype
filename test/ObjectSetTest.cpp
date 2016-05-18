@@ -35,6 +35,7 @@ public:
     Object* H;
     Object* X;
     ObjectSet set;
+    ObjectSet set2;
 };
 
 TEST_F(ObjectSetTest, Basics) {
@@ -68,12 +69,17 @@ TEST_F(ObjectSetTest, Autoremoving) {
 TEST_F(ObjectSetTest, BasicDescendants) {
     A->addChild(B);
     B->addChild(C);
-    set.add(B);
+    bool resultB = set.add(B);
+    bool resultB2 = set.add(B);
+    EXPECT_TRUE(resultB);
+    EXPECT_FALSE(resultB2);
     EXPECT_TRUE(set.contains(B));
-    set.add(C);
+    bool resultC = set.add(C);
+    EXPECT_FALSE(resultC);
     EXPECT_FALSE(set.contains(C));
     EXPECT_EQ(1, set.size());
-    set.add(A);
+    bool resultA = set.add(A);
+    EXPECT_TRUE(resultA);
     EXPECT_EQ(1, set.size());
     EXPECT_TRUE(set.contains(A));
     EXPECT_FALSE(set.contains(B));
@@ -89,11 +95,63 @@ TEST_F(ObjectSetTest, AdvancedDescendants) {
     C->addChild(G);
     C->addChild(H);
     set.add(A);
-    set.remove(F);
+    bool resultF = set.remove(F);
+    EXPECT_TRUE(resultF);
     EXPECT_EQ(4, set.size());
     EXPECT_FALSE(set.contains(F));
     EXPECT_TRUE(set.contains(B));
     EXPECT_TRUE(set.contains(G));
     EXPECT_TRUE(set.contains(H));
     EXPECT_TRUE(set.contains(X));
+}
+
+TEST_F(ObjectSetTest, Removing) {
+    A->addChild(B);
+    A->addChild(C);
+    A->addChild(X);
+    B->addChild(D);
+    B->addChild(E);
+    C->addChild(F);
+    C->addChild(G);
+    C->addChild(H);
+    set.add(A);
+    bool removeH = set.remove(H);
+    EXPECT_FALSE(removeH);
+    bool removeX = set.remove(X);
+    EXPECT_TRUE(removeX);
+    EXPECT_EQ(2, set.size());
+    EXPECT_TRUE(set.contains(B));
+    EXPECT_TRUE(set.contains(C));
+    EXPECT_FALSE(set.contains(X));
+    EXPECT_FALSE(set.contains(A));
+    bool removeX2 = set.remove(X);
+    EXPECT_FALSE(removeX2);
+    EXPECT_EQ(2, set.size());
+    bool removeA = set.remove(A);
+    EXPECT_FALSE(removeA);
+    EXPECT_EQ(2, set.size());
+    bool removeC = set.remove(C);
+    EXPECT_TRUE(removeC);
+    EXPECT_EQ(1, set.size());
+    EXPECT_TRUE(set.contains(B));
+    EXPECT_FALSE(set.contains(C));
+}
+
+TEST_F(ObjectSetTest, TwoSets) {
+    Object* Q = new Object("Q");
+    A->addChild(B);
+    A->addChild(Q);
+    set.add(A);
+    set2.add(A);
+    EXPECT_EQ(1, set.size());
+    EXPECT_EQ(1, set2.size());
+    set.remove(B);
+    EXPECT_EQ(1, set.size());
+    EXPECT_TRUE(set.contains(Q));
+    EXPECT_EQ(1, set2.size());
+    EXPECT_TRUE(set2.contains(A));
+    delete Q;
+    EXPECT_EQ(0, set.size());
+    EXPECT_EQ(1, set2.size());
+    EXPECT_TRUE(set2.contains(A));
 }
