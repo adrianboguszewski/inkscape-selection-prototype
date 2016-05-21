@@ -1,13 +1,36 @@
 #include "ObjectSet.h"
 
 bool ObjectSet::add(Object* object) {
-    if (anyParentIsInSet(object)) {
+    // any ancestor is in the set - do nothing
+    if (_anyAncestorIsInSet(object)) {
         return false;
     }
-    removeChildrenFromSet(object);
 
-    _add(object);
+    // check if there is mutual ancestor for some elements, which can replace all of them in the set
+    Object* o = _getMutualAncestor(object);
+
+    // remove all descendants from the set
+    _removeDescendantsFromSet(o);
+
+    _add(o);
     return true;
+}
+
+bool ObjectSet::remove(Object* object) {
+    // object is the top of subtree
+    if (contains(object)) {
+        _remove(object);
+        return true;
+    }
+
+    // any ancestor of object is in the set
+    if (_anyAncestorIsInSet(object)) {
+        _removeAncestorsFromSet(object);
+        return true;
+    }
+
+    // no object nor any parent in the set
+    return false;
 }
 
 bool ObjectSet::contains(Object* object) {
@@ -22,43 +45,7 @@ int ObjectSet::size() {
     return container.size();
 }
 
-bool ObjectSet::remove(Object* object) {
-    // object is the top of subtree
-    if (contains(object)) {
-        _remove(object);
-        return true;
-    }
-
-    // any parent of object is in the set
-    if (anyParentIsInSet(object)) {
-        Object* o = object;
-        while (o->getParent() != NULL) {
-            for (auto &child: o->getParent()->getChildren()) {
-                if (&child != o) {
-                    _add(&child);
-                }
-            }
-            if (contains(o->getParent())) {
-                _remove(o->getParent());
-                break;
-            }
-            o = o->getParent();
-        }
-        return true;
-    }
-
-    // no object nor any parent in the set
-    return false;
-}
-
-void ObjectSet::print() {
-    for (auto& object: container) {
-        std::cout << object->getName() << " ";
-    }
-    std::cout << std::endl;
-}
-
-bool ObjectSet::anyParentIsInSet(Object *object) {
+bool ObjectSet::_anyAncestorIsInSet(Object *object) {
     Object* o = object;
     while (o != NULL) {
         if (contains(o)) {
@@ -70,7 +57,7 @@ bool ObjectSet::anyParentIsInSet(Object *object) {
     return false;
 }
 
-void ObjectSet::removeChildrenFromSet(Object *object) {
+void ObjectSet::_removeDescendantsFromSet(Object *object) {
     for (auto& child: object->getChildren()) {
         if (contains(&child)) {
             _remove(&child);
@@ -78,7 +65,7 @@ void ObjectSet::removeChildrenFromSet(Object *object) {
             continue;
         }
 
-        removeChildrenFromSet(&child);
+        _removeDescendantsFromSet(&child);
     }
 }
 
@@ -93,4 +80,37 @@ void ObjectSet::_add(Object *object) {
     container.push_back(object);
 }
 
+Object *ObjectSet::_getMutualAncestor(Object *object) {
+    Object *o = object;
 
+    bool flag = true;
+    while (o->getParent() != NULL) {
+        for (auto &child: o->getParent()->getChildren()) {
+            if(&child != o && !contains(&child)) {
+                flag = false;
+                break;
+            }
+        }
+        if (!flag) {
+            break;
+        }
+        o = o->getParent();
+    }
+    return o;
+}
+
+void ObjectSet::_removeAncestorsFromSet(Object *object) {
+    Object* o = object;
+    while (o->getParent() != NULL) {
+        for (auto &child: o->getParent()->getChildren()) {
+            if (&child != o) {
+                _add(&child);
+            }
+        }
+        if (contains(o->getParent())) {
+            _remove(o->getParent());
+            break;
+        }
+        o = o->getParent();
+    }
+}

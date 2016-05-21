@@ -69,6 +69,7 @@ TEST_F(ObjectSetTest, Autoremoving) {
 TEST_F(ObjectSetTest, BasicDescendants) {
     A->addChild(B);
     B->addChild(C);
+    A->addChild(D);
     bool resultB = set.add(B);
     bool resultB2 = set.add(B);
     EXPECT_TRUE(resultB);
@@ -103,6 +104,10 @@ TEST_F(ObjectSetTest, AdvancedDescendants) {
     EXPECT_TRUE(set.contains(G));
     EXPECT_TRUE(set.contains(H));
     EXPECT_TRUE(set.contains(X));
+    bool resultF2 = set.add(F);
+    EXPECT_TRUE(resultF2);
+    EXPECT_EQ(1, set.size());
+    EXPECT_TRUE(set.contains(A));
 }
 
 TEST_F(ObjectSetTest, Removing) {
@@ -114,9 +119,9 @@ TEST_F(ObjectSetTest, Removing) {
     C->addChild(F);
     C->addChild(G);
     C->addChild(H);
-    set.add(A);
     bool removeH = set.remove(H);
     EXPECT_FALSE(removeH);
+    set.add(A);
     bool removeX = set.remove(X);
     EXPECT_TRUE(removeX);
     EXPECT_EQ(2, set.size());
@@ -154,4 +159,15 @@ TEST_F(ObjectSetTest, TwoSets) {
     EXPECT_EQ(0, set.size());
     EXPECT_EQ(1, set2.size());
     EXPECT_TRUE(set2.contains(A));
+}
+
+TEST_F(ObjectSetTest, SetRemoving) {
+    ObjectSet *objectSet = new ObjectSet();
+    A->addChild(B);
+    objectSet->add(A);
+    objectSet->add(C);
+    EXPECT_EQ(2, objectSet->size());
+    delete objectSet;
+    EXPECT_EQ("A", A->getName());
+    EXPECT_EQ("C", C->getName());
 }

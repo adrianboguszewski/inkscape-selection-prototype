@@ -26,17 +26,19 @@ public:
     ObjectSet() {};
     ~ObjectSet() {};
     bool add(Object* object);
-    void clear();
-    bool contains(Object* object);
-    int size();
     bool remove(Object* object);
-    void print();
+    bool contains(Object* object);
+    void clear();
+    int size();
 
 private:
-    bool anyParentIsInSet(Object* object);
-    void removeChildrenFromSet(Object *object);
-    void _remove(Object* object);
     void _add(Object* object);
+    void _remove(Object* object);
+    bool _anyAncestorIsInSet(Object *object);
+    void _removeDescendantsFromSet(Object *object);
+    void _removeAncestorsFromSet(Object *object);
+    Object *_getMutualAncestor(Object *object);
+
     multi_index_container container;
     std::unordered_map<Object*, sigc::connection> releaseConnections;
 };

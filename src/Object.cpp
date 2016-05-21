@@ -4,6 +4,7 @@ Object::Object(std::string name) : name(name), parent(NULL) { }
 
 Object::~Object() {
     // only for this prototype
+    // call destructor on every child
     children.clear_and_dispose(delete_disposer());
     release_signal.emit(this);
 }
