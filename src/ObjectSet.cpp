@@ -47,7 +47,7 @@ int ObjectSet::size() {
 
 bool ObjectSet::_anyAncestorIsInSet(Object *object) {
     Object* o = object;
-    while (o != NULL) {
+    while (o != nullptr) {
         if (contains(o)) {
             return true;
         }
@@ -84,7 +84,7 @@ Object *ObjectSet::_getMutualAncestor(Object *object) {
     Object *o = object;
 
     bool flag = true;
-    while (o->getParent() != NULL) {
+    while (o->getParent() != nullptr) {
         for (auto &child: o->getParent()->getChildren()) {
             if(&child != o && !contains(&child)) {
                 flag = false;
@@ -101,7 +101,7 @@ Object *ObjectSet::_getMutualAncestor(Object *object) {
 
 void ObjectSet::_removeAncestorsFromSet(Object *object) {
     Object* o = object;
-    while (o->getParent() != NULL) {
+    while (o->getParent() != nullptr) {
         for (auto &child: o->getParent()->getChildren()) {
             if (&child != o) {
                 _add(&child);
