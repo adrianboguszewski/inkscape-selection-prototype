@@ -38,7 +38,9 @@ bool ObjectSet::contains(Object* object) {
 }
 
 void ObjectSet::clear() {
-    container.clear();
+    for (auto object: container) {
+        _remove(object);
+    }
 }
 
 int ObjectSet::size() {
@@ -113,4 +115,8 @@ void ObjectSet::_removeAncestorsFromSet(Object *object) {
         }
         o = o->getParent();
     }
+}
+
+ObjectSet::~ObjectSet() {
+    clear();
 }

@@ -24,7 +24,7 @@ typedef boost::multi_index_container<
 class ObjectSet {
 public:
     ObjectSet() {};
-    ~ObjectSet() {};
+    ~ObjectSet();
     bool add(Object* object);
     bool remove(Object* object);
     bool contains(Object* object);
